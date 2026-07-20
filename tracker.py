@@ -6,6 +6,7 @@ import smtplib
 from email.mime.text import MIMEText
 import time
 import config
+import csv
 
 def get_price(url):
     options = webdriver.ChromeOptions()
@@ -44,22 +45,21 @@ def get_price(url):
     finally:
         driver.quit()
 
-url = "https://www.aliexpress.com/item/1005010279002187.html"
-
-def check_price():
-    current_price = get_price(config.URL)
+def check_price(product):
+    current_price = get_price(product["url"])
+    target_price = product["target_price"]
     if current_price is None:
         print("Could not retrieve the price.")
         return
-    elif current_price < config.TARGET_PRICE:
+    elif current_price < target_price:
         print(f"Price dropped to ${current_price}! Sending alert...")
-        send_email(current_price)
+        send_email(product, current_price)
     else:
         print(f"Price is ${current_price} — above target")
     
-def send_email(current_price):
+def send_email(product, current_price):
     subject = "Price Alert: Item Price Dropped!"
-    body = f"Good news! The price dropped to ${current_price}. \n Check it out here: {config.url}"
+    body = f"Good news! The price of {product['name']} dropped to ${current_price}. \n Check it out here: {product['url']}"
 
     msg = MIMEText(body)
     msg["Subject"] = subject
@@ -73,6 +73,7 @@ def send_email(current_price):
         print("Email sent successfully!")
 
 while True:
-    check_price()
+    for product in config.PRODUCTS:
+        check_price(product)
     print(f"Waiting {config.CHECK_INTERVAL} seconds before next check...")
     time.sleep(config.CHECK_INTERVAL)
