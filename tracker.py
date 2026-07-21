@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 import time
 import config
 import csv
+import requests
 
 def get_price(url):
     options = webdriver.ChromeOptions()
@@ -56,6 +57,7 @@ def check_price(product):
     if current_price < target_price:
         print(f"Price dropped to ${current_price}! Sending alert...")
         send_email(product, current_price)
+        send_telegram(product, current_price)
     else:
         print(f"Price is ${current_price} — above target")
     
@@ -73,6 +75,16 @@ def send_email(product, current_price):
         server.login(config.EMAIL_SENDER, config.EMAIL_PASSWORD)
         server.sendmail(config.EMAIL_SENDER, config.EMAIL_RECEIVER, msg.as_string())
         print("Email sent successfully!")
+
+def send_telegram(product, current_price):
+    token = config.TELEGRAM_TOKEN
+    chat_id = config.TELEGRAM_CHAT_ID
+    message = f"Price alert! {product['name']} dropped to ${current_price}. Check it out here: {product['url']}"
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+
+    requests.post(url, data={"chat_id": chat_id, "text": message})
+    print("Telegram message sent successfully!")
+
 
 def save_to_csv(product, current_price):
     with open('prices.csv', mode='a', newline='') as file:
