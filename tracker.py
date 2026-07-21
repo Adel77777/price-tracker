@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from datetime import datetime
 import smtplib
 from email.mime.text import MIMEText
 import time
@@ -51,7 +52,8 @@ def check_price(product):
     if current_price is None:
         print("Could not retrieve the price.")
         return
-    elif current_price < target_price:
+    save_to_csv(product, current_price)
+    if current_price < target_price:
         print(f"Price dropped to ${current_price}! Sending alert...")
         send_email(product, current_price)
     else:
@@ -72,8 +74,16 @@ def send_email(product, current_price):
         server.sendmail(config.EMAIL_SENDER, config.EMAIL_RECEIVER, msg.as_string())
         print("Email sent successfully!")
 
+def save_to_csv(product, current_price):
+    with open('prices.csv', mode='a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), product['name'], current_price])
+
 while True:
     for product in config.PRODUCTS:
         check_price(product)
     print(f"Waiting {config.CHECK_INTERVAL} seconds before next check...")
     time.sleep(config.CHECK_INTERVAL)
+
+
+

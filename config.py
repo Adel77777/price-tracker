@@ -4,6 +4,6 @@ PRODUCTS = [
     {"name": "ssd", "url": "https://ar.aliexpress.com/item/1005008637113849.html", "target_price": 100.00}
 ]
 EMAIL_SENDER = "adeljhjh@gmail.com"
-EMAIL_PASSWORD = "epvh foel yowx mmga"
+EMAIL_PASSWORD = "iiwz tcwq wumi ecdn"
 EMAIL_RECEIVER = "adeljhjh@gmail.com"
 CHECK_INTERVAL = 10
