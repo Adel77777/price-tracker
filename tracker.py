@@ -4,6 +4,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
 import smtplib
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import time
 import config
@@ -62,19 +63,29 @@ def check_price(product):
         print(f"Price is ${current_price} — above target")
     
 def send_email(product, current_price):
-    subject = "Price Alert: Item Price Dropped!"
-    body = f"Good news! The price of {product['name']} dropped to ${current_price}. \n Check it out here: {product['url']}"
+    subject = "🔔Price Alert: Item Price Dropped!"
+    #body = f"Good news! The price of {product['name']} dropped to ${current_price}. \n Check it out here: {product['url']}"
 
-    msg = MIMEText(body)
+    msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = config.EMAIL_SENDER
     msg["To"] = config.EMAIL_RECEIVER
+
+    with open("templates/email_template.html", "r", encoding="UTF-8") as f:
+        html = f.read()
+
+    html = html.replace("{{name}}", product["name"].upper())
+    html = html.replace("{{price}}", f"${current_price}")
+    html = html.replace("{{url}}", product["url"])
+
+    msg.attach(MIMEText(html, "html"))
 
     with smtplib.SMTP("smtp.gmail.com", 587) as server:
         server.starttls()
         server.login(config.EMAIL_SENDER, config.EMAIL_PASSWORD)
         server.sendmail(config.EMAIL_SENDER, config.EMAIL_RECEIVER, msg.as_string())
         print("Email sent successfully!")
+    
 
 def send_telegram(product, current_price):
     token = config.TELEGRAM_TOKEN

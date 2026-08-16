@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Template</title>
+</head>
+<body style="font-family: 'Segoe UI', sans-serif;
+            background: #f4f4f4;
+            padding: 2rem;">
+    <div style="max-width: 500px;
+                margin: auto; 
+                background: white; 
+                border-radius: 12px; 
+                overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+
+        <div style="background: #0f1117;
+                    color:#00d4ff;
+                    padding: 1.5rem; 
+                    text-align: center;">
+            <h1>🔔Price Drop Alert!</h1>
+        </div>
+        <div style="padding: 2rem;">
+            <p style="color: #333; font-size: 1rem;">Great News! A product on your watchlist just dropped in price.</p>
+            <div style="background: #f9f9f9;
+                        border-radius: 8px; 
+                        padding: 1rem; 
+                        margin: 1.5rem 0;">
+                <p style="margin: 0; 
+                        color: #888; 
+                        font-size: 0.85rem;">
+                    <strong>PRODUCT</strong>
+                </p>
+                <p style="margin: 4px 0 0; 
+                        color: #0f1117; 
+                        font-size: 1.2rem; 
+                        font-weight: 600;">
+                    {{name}}
+                </p>
+            </div>
+            <div style="background: #f9f9f9; 
+                        border-radius: 8px; 
+                        padding: 1rem; 
+                        margin: 1.5rem 0;">
+                <p style="margin: 0; 
+                        color: #888; 
+                        font-size: 0.85rem;">
+                    <strong>CURRENT PRICE</strong>
+                </p>
+                <p style="margin: 4px 0 0; 
+                        color: #00d4ff; 
+                        font-size: 1.8rem; 
+                        font-weight: 700;">
+                    {{price}}
+                </p>
+            </div>
+            <a style="display: block; 
+                    text-align: center; 
+                    background: #00d4ff; 
+                    color: #0f1117; 
+                    padding: 12px; 
+                    border-radius: 8px; 
+                    text-decoration: none; 
+                    font-weight: 600; 
+                    font-size: 1rem;" 
+            href="{{url}}">View Product →</a>
+        </div>
+        <div style="background: #f4f4f4; 
+                    padding: 1rem; 
+                    text-align: center;">
+
+            <p style="color: #aaa; 
+                    font-size: 0.75rem; 
+                    margin: 0;">
+            Thanks for using our service!</p>
+        </div>
+    </div>
+</body>
+</html>
