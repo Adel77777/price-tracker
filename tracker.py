@@ -44,6 +44,11 @@ def get_price(url):
 
     except Exception as e:
         print(f"Error: {e}")
+        try:
+            driver.save_screenshot("error_screenshot.png")
+            print("saved error_screenshot.png")
+        except:
+            pass
         return None
     finally:
         driver.quit()
@@ -52,15 +57,21 @@ def check_price(product):
     current_price = get_price(product["url"])
     target_price = product["target_price"]
     if current_price is None:
-        print("Could not retrieve the price.")
-        return
+        return {"success": False, "error": "Could not retrieve price"}
+    
     save_to_csv(product, current_price)
-    if current_price < target_price:
+
+    result = {"success": True, "price": current_price, "name": product["name"]}
+
+    if current_price < product['target_price']:
         print(f"Price dropped to ${current_price}! Sending alert...")
         send_email(product, current_price)
         send_telegram(product, current_price)
+        result["alert"] = True
+        return result
     else:
         print(f"Price is ${current_price} — above target")
+        return result
     
 def send_email(product, current_price):
     subject = "🔔Price Alert: Item Price Dropped!"
@@ -101,12 +112,12 @@ def save_to_csv(product, current_price):
     with open('prices.csv', mode='a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), product['name'], current_price])
-
-while True:
-    for product in config.PRODUCTS:
-        check_price(product)
-    print(f"Waiting {config.CHECK_INTERVAL} seconds before next check...")
-    time.sleep(config.CHECK_INTERVAL)
+if __name__ == "__main__":
+    while True:
+        for product in config.PRODUCTS:
+            check_price(product)
+        print(f"Waiting {config.CHECK_INTERVAL} seconds before next check...")
+        time.sleep(config.CHECK_INTERVAL)
 
 
 

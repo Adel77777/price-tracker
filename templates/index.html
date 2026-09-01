@@ -6,6 +6,19 @@
     <title>Price Tracker</title>
 </head>
 <body>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for m in messages %}<li>{{ m }}</li>{% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
+    <form action="/add" method="post">
+        <input type="text" name="name" placeholder="Product Name" required>
+        <input type="text" name="url" placeholder="Product URL" required>
+        <input type="number" name="target_price" placeholder="Target Price" step="0.01" required>
+        <button type="submit">Add Product</button>
+    </form>
     <h1>Price Tracker</h1>
     <table>
         <thead>
