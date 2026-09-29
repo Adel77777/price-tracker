@@ -17,8 +17,15 @@ def get_price(url):
     # Force English language
     options.add_argument("--lang=en-US")
     options.add_experimental_option('prefs', {
-        'intl.accept_languages': 'en-US,en'
+        'intl.accept_languages': 'en-US,en',
+        'profile.managed_default_content_settings.images': 2
     })
+    options.page_load_strategy = 'eager'
+    options.add_argument("--disable-gpu")
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-notifications")
+    options.add_argument("--blink-settings=imagesEnabled=false")
+    options.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Chrome(options=options)
 

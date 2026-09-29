@@ -36,10 +36,6 @@ def add_product():
     else:
         flash(f"Could not check '{product['name']}': {result['error']}")
     return redirect(url_for('dashboard'))
-    """ name = request.form['name']
-    product_url = request.form['url']
-    target_price = float(request.form['target_price'])
-    print(f"Adding product: {name}, URL: {product_url}, Target Price: {target_price}") """
     
 
 if __name__ =='__main__':
