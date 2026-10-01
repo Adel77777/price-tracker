@@ -4,7 +4,7 @@ import csv
 import config
 
 app = Flask(__name__)
-app.secret_key = "dev"
+app.secret_key = "gladidzd"
 
 def load_prices():
     prices = []
@@ -16,7 +16,7 @@ def load_prices():
             'name' : row[1],
             'price' : row[2]
             }) 
-    return prices
+    return list(reversed(prices))
             
 @app.route('/')
 def dashboard():

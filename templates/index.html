@@ -3,40 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{url_for ('static', filename='style.css') }}">
     <title>Price Tracker</title>
 </head>
 <body>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <ul>
-            {% for m in messages %}<li>{{ m }}</li>{% endfor %}
-        </ul>
-    {% endif %}
-    {% endwith %}
-    <form action="/add" method="post">
-        <input type="text" name="name" placeholder="Product Name" required>
-        <input type="text" name="url" placeholder="Product URL" required>
-        <input type="number" name="target_price" placeholder="Target Price" step="0.01" required>
-        <button type="submit">Add Product</button>
-    </form>
-    <h1>Price Tracker</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Name</th>
-                <th>Price</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for price in prices %}
-            <tr>
-                <td>{{ price.date }}</td>
-                <td>{{ price.name }}</td>
-                <td>${{ price.price }}$</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="wrap">
+        <header>
+            <h1>Price Tracker</h1>
+            <p>Add an AliExpress product and a target price. Get notified when it drops.</p>
+        </header>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category}}">{{ message }}</div>
+                {% endfor%}
+            {% endif %}
+        {% endwith %}
+        <form action="/add" method="post">
+            <input type="text" name="name" placeholder="Product Name" required>
+            <input type="text" name="url" placeholder="Product URL" required>
+            <input type="number" name="target_price" placeholder="Target Price" step="0.01" required>
+            <button type="submit">Track Price</button>
+        </form>
+
+        <p class="section-label">History</p>
+
+        {% if prices %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for price in prices %}
+                <tr>
+                    <td class="date">{{ price.date }}</td>
+                    <td>{{ price.name }}</td>
+                    <td class="price">${{ price.price }}$</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {%else %}
+        <div class="empty">No products tracked yet -- Add one above.</div>
+        {% endif %}
+    </div>
 </body>
 </html>
