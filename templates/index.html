@@ -26,30 +26,45 @@
             <button style="cursor: pointer;" type="submit">Track Price</button>
         </form>
 
-        <p class="section-label">History</p>
+        <p class="section-label">Tracked Products</p>
 
-        {% if prices %}
+        {% if products %}
         <table>
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>Name</th>
-                    <th>Price</th>
+                    <th>Product</th>
+                    <th>Current Price</th>
+                    <th>Target Price</th>
+                    <th>Status</th>
+                    <th>Last Checked</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
-                {% for price in prices %}
+                {% for product in products %}
                 <tr>
-                    <td class="date">{{ price.date }}</td>
-                    <td>{{ price.name }}</td>
-                    <td class="price">${{ price.price }}$</td>
+                    <td>{{ product.name }}</td>
+                    <td class="price">{{ "$" ~ product.current_price if product.current_price else "-" }}</td>
+                    <td class="price">${{ product.target_price }}</td>
+                    <td>{{"Target Reached" if product.notified else "Watching" }}</td>
+                    <td class="date">{{ product.last_checked or "—" }}</td>
+                    <td>
+                        <form action="/remove" method="post">
+                            <input type="hidden" name="url" value="{{ product.url }}">
+                            <button style="cursor: pointer;" type="submit">Stop Tracking</button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
+            {%else%}
+            <div class="empty">No products tracked yet -- Add one above.</div>
+            {% endif %}
+            <details>
+                <summary class="section-label">Recent checks</summary>
+            </details>
+
         </table>
-        {%else %}
-        <div class="empty">No products tracked yet -- Add one above.</div>
-        {% endif %}
     </div>
 </body>
 </html>
