@@ -19,7 +19,7 @@
                 {% endfor%}
             {% endif %}
         {% endwith %}
-        <form action="/add" method="post">
+        <form class="add-product" action="/add" method="post">
             <input type="text" name="name" placeholder="Product Name" required>
             <input type="text" name="url" placeholder="Product URL" required>
             <input type="number" name="target_price" placeholder="Target Price" step="0.01" required>
@@ -57,11 +57,23 @@
                 </tr>
                 {% endfor %}
             </tbody>
+        </table>
             {%else%}
             <div class="empty">No products tracked yet -- Add one above.</div>
             {% endif %}
             <details>
                 <summary class="section-label">Recent checks</summary>
+                <table>
+                    <tbody>
+                        {%for row in prices[:10]%}
+                        <tr>
+                            <td class="date">{{ row.date }}</td>
+                            <td>{{ row.name }}</td>
+                            <td class="price">${{ row.price }}</td>
+                        </tr>
+                        {%endfor%}
+                    </tbody>
+                </table>
             </details>
 
         </table>

@@ -3,10 +3,10 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from tracker import check_price, get_price, send_email, send_telegram, save_to_csv
 from products import save_product, load_products, mark_notified, remove_product
 import csv
-import config
+import os
 
 app = Flask(__name__)
-app.secret_key = "gladidzd"
+app.secret_key = os.environ.get("SECRET_KEY", "cryptic") 
 
 def recheck_all_products():
     for product in load_products():
@@ -30,14 +30,17 @@ scheduler.start()
 
 def load_prices():
     prices = []
-    with open('prices.csv', 'r') as file:
-        reader = csv.reader(file)
-        for row in reader:
-            prices.append({
-            'date' : row[0],
-            'name' : row[1],
-            'price' : row[2]
-            }) 
+    try:
+        with open('prices.csv', 'r') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                prices.append({
+                'date' : row[0],
+                'name' : row[1],
+                'price' : row[2]
+                })
+    except FileNotFoundError:
+        pass 
     return list(reversed(prices))
 
 def latest_prices():
@@ -67,17 +70,19 @@ def add_product():
     }
     save_product(product)
     result = check_price(product)
+    if result["success"] and result.get("alert"):
+        mark_notified(product["url"])
     if result["success"]:
-        flash(f"Checked '{product['name']}' — current price ${result['price']}")
+        flash(f"Checked '{product['name']}' — current price ${result['price']}", "ok")
     else:
-        flash(f"Could not check '{product['name']}': {result['error']}")
+        flash(f"Could not check '{product['name']}': {result['error']}", "fail")
     return redirect(url_for('dashboard'))
 
 @app.route('/remove', methods=['POST'])
 def remove():
     url = request.form['url']
     remove_product(url)
-    flash(f"Removed product with URL: {url}")
+    flash(f"Removed product with URL: {url}", "ok")
     return redirect(url_for('dashboard'))
 
     

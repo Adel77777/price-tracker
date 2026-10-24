@@ -10,24 +10,38 @@ import time
 import config
 import csv
 import requests
+import os
 
 def get_price(url):
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
-    # Force English language
+    options.add_argument("--headless=new")
+    # force English language
     options.add_argument("--lang=en-US")
+    options.add_argument("--window-size=1366,768")
+    options.add_argument(
+        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    )
     options.add_experimental_option('prefs', {
         'intl.accept_languages': 'en-US,en',
         'profile.managed_default_content_settings.images': 2
     })
     options.page_load_strategy = 'eager'
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--disable-extensions")
     options.add_argument("--disable-notifications")
     options.add_argument("--blink-settings=imagesEnabled=false")
     options.add_argument("--disable-dev-shm-usage")
 
-    driver = webdriver.Chrome(options=options)
+    chrome_bin = os.environ.get("CHROME_BIN")
+    driver_path = os.environ.get("CHROMEDRIVER_PATH")
+    if chrome_bin:
+        options.binary_location = chrome_bin
+
+    service = webdriver.ChromeService(executable_path=driver_path) if driver_path else None
+    driver = webdriver.Chrome(service=service, options=options) if service else webdriver.Chrome(options=options)
 
     try:
         # Set cookies BEFORE loading any page
