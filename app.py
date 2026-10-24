@@ -18,8 +18,14 @@ def recheck_all_products():
                 continue
             save_to_csv(product, price)
             if price < product["target_price"]:
-                send_email(product, price)
-                send_telegram(product, price)
+                try:
+                    send_email(product, price)
+                except Exception as e:
+                    print(f"Email failed: {e}")
+                try:
+                    send_telegram(product, price)
+                except Exception as e:
+                    print(f"Telegram failed: {e}")
                 mark_notified(product["url"])
                 print(f"Price dropped for {product['name']}! Alert sent.")
         except Exception as e:
