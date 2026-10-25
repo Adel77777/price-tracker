@@ -9,7 +9,7 @@ import threading
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "cryptic") 
 
-scrape_lock = threading.lock()
+scrape_lock = threading.Lock()
 
 def check_in_background(product):
     with scrape_lock:
