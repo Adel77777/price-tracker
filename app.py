@@ -4,16 +4,29 @@ from tracker import check_price, get_price, send_email, send_telegram, save_to_c
 from products import save_product, load_products, mark_notified, remove_product
 import csv
 import os
+import threading
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "cryptic") 
+
+scrape_lock = threading.lock()
+
+def check_in_background(product):
+    with scrape_lock:
+        try:
+            result = check_price(product)
+            if result["success"] and result.get("alert"):
+                mark_notified(product["url"])
+        except Exception as e:
+            print(f"Background check failed for {product['name']}: {e}")
 
 def recheck_all_products():
     for product in load_products():
         if product["notified"]:
             continue
         try:
-            price = get_price(product["url"])
+            with scrape_lock:
+                price = get_price(product["url"])
             if price is None:
                 continue
             save_to_csv(product, price)
@@ -75,13 +88,8 @@ def add_product():
         "target_price": float(request.form['target_price'])
     }
     save_product(product)
-    result = check_price(product)
-    if result["success"] and result.get("alert"):
-        mark_notified(product["url"])
-    if result["success"]:
-        flash(f"Checked '{product['name']}' — current price ${result['price']}", "ok")
-    else:
-        flash(f"Could not check '{product['name']}': {result['error']}", "fail")
+    threading.Thread(target=check_in_background, args=(product,), daemon=True).start()
+    flash(f"Now tracking '{product['name']}'. The first price check is running, refresh in a few seconds.", "ok")
     return redirect(url_for('dashboard'))
 
 @app.route('/remove', methods=['POST'])
