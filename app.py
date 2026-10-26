@@ -11,14 +11,25 @@ app.secret_key = os.environ.get("SECRET_KEY", "cryptic")
 
 scrape_lock = threading.Lock()
 
+check_status = {}
+
 def check_in_background(product):
+    url, name = product["url"], product["name"]
     with scrape_lock:
         try:
             result = check_price(product)
-            if result["success"] and result.get("alert"):
-                mark_notified(product["url"])
+            if result["success"]:
+                if result.get("alert"):    
+                    mark_notified(url)
+                    message = f"Price dropped for '{name}'! Now ${result['price']}, alert sent."
+                else:
+                    message = f"Checked '{name}': current price ${result['price']}, above your target."
+                check_status[url] = {"state": "ok", "message": message}
+            else:
+                check_status[url] = {"state": "fail", "message": f"Could not check '{name}': {result['error']}"}
         except Exception as e:
-            print(f"Background check failed for {product['name']}: {e}")
+            print(f"Background check failed for {name}: {e}", flush=True)
+            check_status[url] = {"state": "fail", "message": f"Could not check '{name}': {e}"}
 
 def recheck_all_products():
     for product in load_products():
@@ -71,6 +82,11 @@ def latest_prices():
             
 @app.route('/')
 def dashboard():
+    for url, status in list(check_status.items()):
+        if status["state"] != "checking":
+            flash(status["message"], status["state"])
+            del check_status[url]
+    checking = any(s["state"] == "checking" for s in check_status.values())
     prices = load_prices()
     products = load_products()
     latest = latest_prices()
@@ -78,7 +94,7 @@ def dashboard():
         row = latest.get(product['name'])
         product['current_price'] = row['price'] if row else None
         product['last_checked'] = row['date'] if row else None
-    return render_template('index.html', prices=prices, products=products)
+    return render_template('index.html', prices=prices, products=products, checking=checking)
 
 @app.route('/add', methods=['POST'])
 def add_product():
@@ -88,8 +104,9 @@ def add_product():
         "target_price": float(request.form['target_price'])
     }
     save_product(product)
+    check_status[product["url"]] = {"state": "checking", "message": ""}
     threading.Thread(target=check_in_background, args=(product,), daemon=True).start()
-    flash(f"Now tracking '{product['name']}'. The first price check is running, refresh in a few seconds.", "ok")
+    flash(f"Now tracking '{product['name']}'. Checking the price...", "ok")
     return redirect(url_for('dashboard'))
 
 @app.route('/remove', methods=['POST'])

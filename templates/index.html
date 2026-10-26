@@ -19,6 +19,10 @@
                 {% endfor%}
             {% endif %}
         {% endwith %}
+        {% if checking %}
+        <div class="flash">Checking the price... this page will update automatically.</div>
+        <script>setTimeout(function () { location.reload(); }, 4000);</script>
+        {% endif %}
         <form class="add-product" action="/add" method="post">
             <input type="text" name="name" placeholder="Product Name" required>
             <input type="text" name="url" placeholder="Product URL" required>
@@ -75,8 +79,6 @@
                     </tbody>
                 </table>
             </details>
-
-        </table>
     </div>
 </body>
 </html>

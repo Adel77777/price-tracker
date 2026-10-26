@@ -86,8 +86,14 @@ def check_price(product):
 
     if current_price < product['target_price']:
         print(f"Price dropped to ${current_price}! Sending alert...")
-        send_email(product, current_price)
-        send_telegram(product, current_price)
+        try:
+            send_email(product, current_price)
+        except Exception as e:
+            print(f"Email failed: {e}")
+        try:
+            send_telegram(product, current_price)
+        except Exception as e:
+            print(f"Telegram failed: {e}")
         result["alert"] = True
         return result
     else:

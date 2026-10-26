@@ -20,7 +20,8 @@ COPY . .
 
 ENV CHROME_BIN=/usr/bin/chromium
 ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
+ENV PYTHONUNBUFFERED=1
 
 # Running stage
 
-CMD gunicorn --workers 1 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT app:app
+CMD gunicorn --workers 1 --threads 4 --timeout 120 --capture-output --access-logfile - --error-logfile - --bind 0.0.0.0:$PORT app:app
