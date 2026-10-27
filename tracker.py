@@ -54,7 +54,7 @@ def get_price(url):
         # Override the site/locale cookies directly
         driver.add_cookie({"name": "aep_usuc_f", "value": "site=glo&c_tp=USD&b_locale=en_US&region=DZ", "domain": ".aliexpress.com"})
         driver.add_cookie({"name": "aep_usuc_f", "value": "site=glo&c_tp=USD&b_locale=en_US&region=DZ", "domain": ".aliexpress.com", "path": "/"})
-
+        driver.get("https://www.aliexpress.com")
         driver.get(url)
 
         price_tag = WebDriverWait(driver, 10).until(
@@ -68,9 +68,10 @@ def get_price(url):
         try:
             driver.save_screenshot("error_screenshot.png")
             print("saved error_screenshot.png")
-            print(f"Page title: {driver.title!r} | URL: {driver.current_url}", flush=True)
-            print(f"Page length: {len(driver.page_source)}", flush=True)
-            print(driver.page_source[:300], flush=True)
+            src = driver.page_source
+            print("Has price selector:", "price-default--current" in src, flush=True)
+            print("Price-like classes:", sorted(set(re.findall(r'class="([^"]*price[^"]*)"', src)))[:15], flush=True)
+            print("ReadyState:", driver.execute_script("return document.readyState"), flush=True)
         except Exception:
             pass
         return None
