@@ -7,6 +7,8 @@ import requests
 import os
 import re
 import smtplib
+import hashlib
+import random
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -33,6 +35,15 @@ _scrape_lock = threading.Lock()
 _driver = None                    
 _scrapes = 0
 
+# DEMO MODE FOR RENDER 
+
+DEMO_MODE = os.environ.get("DEMO_MODE", "").lower() == "true"
+
+def _demo_price(url):
+    seed = int(hashlib.md5(url.encode()).hexdigest(), 16)
+    base = 12 + (seed % 4800) / 100
+    jitter = random.uniform(-0.08, 0.08)
+    return round(base * (1 + jitter), 2)
 
 #building webdriver with necessary options
 
@@ -97,6 +108,10 @@ def _get_driver():
 
 # Price scraping function with error block handling & logging
 def get_price(url):
+    if DEMO_MODE:
+        time.sleep(1.5)
+        return _demo_price(url)
+
     global _scrapes
     match = re.search(r"/item/(\d+)\.html", url)
     if match:
@@ -145,8 +160,11 @@ def check_price(product):
     result = {"success": True, "price": current_price, "name": product["name"]}
 
     if current_price < product['target_price']:
-        print(f"Price dropped to ${current_price}! Sending alert...")
-        send_alerts(product, current_price)
+        if DEMO_MODE:
+            print("Demo mode, alerts skipped", flush=True)
+        else:
+            print(f"Price dropped to ${current_price}! Sending alert...")
+            send_alerts(product, current_price)
         result["alert"] = True
     else:
         print(f"Price is ${current_price} — above target", flush=True)

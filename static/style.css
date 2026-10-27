@@ -154,6 +154,12 @@ td.date {
   border-radius: 3px;
 }
 
+.demo-note {
+  color: var(--amber);
+  font-size: 12px;
+  margin-top: 6px;
+}
+
 @media (max-width: 560px) {
   form.add-product input[name="url"] { flex-basis: 100%; }
 }

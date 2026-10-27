@@ -11,6 +11,9 @@
         <header>
             <h1>Price Tracker</h1>
             <p>Add an AliExpress product and a target price. Get notified when it drops.</p>
+            {% if demo %}
+            <p class="demo-note">Demo mode: prices are simulated and no alerts are sent. The real AliExpress scraper runs locally.</p>
+            {% endif %}
         </header>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}

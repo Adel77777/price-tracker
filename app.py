@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from apscheduler.schedulers.background import BackgroundScheduler
-from tracker import check_price, get_price, send_alerts, save_to_csv
+from tracker import check_price, get_price, send_alerts, save_to_csv, DEMO_MODE
 from products import save_product, load_products, mark_notified, remove_product
 import csv
 import os
@@ -18,7 +18,10 @@ def check_in_background(product):
         if result["success"]:
             if result.get("alert"):    
                 mark_notified(url)
-                message = f"Price dropped for '{name}'! Now ${result['price']}, alert sent."
+                if DEMO_MODE:
+                    message = f"Demo mode: Price dropped for '{name}'! Now ${result['price']}, alert skipped."
+                else:
+                    message = f"Price dropped for '{name}'! Now ${result['price']}, alert sent."
             else:
                 message = f"Checked '{name}': current price ${result['price']}, above your target."
             check_status[url] = {"state": "ok", "message": message}
@@ -38,7 +41,8 @@ def recheck_all_products():
                 continue
             save_to_csv(product, price)
             if price < product["target_price"]:
-                send_alerts(product, price)
+                if not DEMO_MODE:
+                    send_alerts(product, price)
                 mark_notified(product["url"])
                 print(f"Price dropped for {product['name']}! Alert sent.")
         except Exception as e:
@@ -83,7 +87,7 @@ def dashboard():
         row = latest.get(product['name'])
         product['current_price'] = row['price'] if row else None
         product['last_checked'] = row['date'] if row else None
-    return render_template('index.html', prices=prices, products=products, checking=checking)
+    return render_template('index.html', prices=prices, products=products, checking=checking, demo=DEMO_MODE)
 
 @app.route('/add', methods=['POST'])
 def add_product():
@@ -92,6 +96,9 @@ def add_product():
         "url": request.form['url'],
         "target_price": float(request.form['target_price'])
     }
+    if DEMO_MODE and len(load_products()) >= 10:
+        flash("Demo limit reached (10 products). Remove one to add another.", "fail")
+        return redirect(url_for('dashboard'))
     save_product(product)
     check_status[product["url"]] = {"state": "checking", "message": ""}
     threading.Thread(target=check_in_background, args=(product,), daemon=True).start()
