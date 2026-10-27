@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from apscheduler.schedulers.background import BackgroundScheduler
-from tracker import check_price, get_price, send_email, send_telegram, save_to_csv
+from tracker import check_price, get_price, send_alerts, save_to_csv
 from products import save_product, load_products, mark_notified, remove_product
 import csv
 import os
@@ -9,47 +9,36 @@ import threading
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "cryptic") 
 
-scrape_lock = threading.Lock()
-
 check_status = {}
 
 def check_in_background(product):
     url, name = product["url"], product["name"]
-    with scrape_lock:
-        try:
-            result = check_price(product)
-            if result["success"]:
-                if result.get("alert"):    
-                    mark_notified(url)
-                    message = f"Price dropped for '{name}'! Now ${result['price']}, alert sent."
-                else:
-                    message = f"Checked '{name}': current price ${result['price']}, above your target."
-                check_status[url] = {"state": "ok", "message": message}
+    try:
+        result = check_price(product)
+        if result["success"]:
+            if result.get("alert"):    
+                mark_notified(url)
+                message = f"Price dropped for '{name}'! Now ${result['price']}, alert sent."
             else:
-                check_status[url] = {"state": "fail", "message": f"Could not check '{name}': {result['error']}"}
-        except Exception as e:
-            print(f"Background check failed for {name}: {e}", flush=True)
-            check_status[url] = {"state": "fail", "message": f"Could not check '{name}': {e}"}
+                message = f"Checked '{name}': current price ${result['price']}, above your target."
+            check_status[url] = {"state": "ok", "message": message}
+        else:
+            check_status[url] = {"state": "fail", "message": f"Could not check '{name}': {result['error']}"}
+    except Exception as e:
+        print(f"Background check failed for {name}: {e}", flush=True)
+        check_status[url] = {"state": "fail", "message": f"Could not check '{name}': {e}"}
 
 def recheck_all_products():
     for product in load_products():
         if product["notified"]:
             continue
         try:
-            with scrape_lock:
-                price = get_price(product["url"])
+            price = get_price(product["url"])
             if price is None:
                 continue
             save_to_csv(product, price)
             if price < product["target_price"]:
-                try:
-                    send_email(product, price)
-                except Exception as e:
-                    print(f"Email failed: {e}")
-                try:
-                    send_telegram(product, price)
-                except Exception as e:
-                    print(f"Telegram failed: {e}")
+                send_alerts(product, price)
                 mark_notified(product["url"])
                 print(f"Price dropped for {product['name']}! Alert sent.")
         except Exception as e:
