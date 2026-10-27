@@ -13,11 +13,10 @@ import requests
 import os
 import re
 
-match = re.search(r"/item/(\d+)\.html", url)
-if match:
-    url = f"https://www.aliexpress.com/item/{match.group(1)}.html"
-
 def get_price(url):
+    match = re.search(r"/item/(\d+)\.html", url)
+    if match:
+        url = f"https://www.aliexpress.com/item/{match.group(1)}.html"
     options = webdriver.ChromeOptions()
     options.add_argument("--headless=new")
     # force English language
