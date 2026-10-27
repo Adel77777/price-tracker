@@ -11,6 +11,11 @@ import config
 import csv
 import requests
 import os
+import re
+
+match = re.search(r"/item/(\d+)\.html", url)
+if match:
+    url = f"https://www.aliexpress.com/item/{match.group(1)}.html"
 
 def get_price(url):
     options = webdriver.ChromeOptions()
@@ -65,6 +70,8 @@ def get_price(url):
             driver.save_screenshot("error_screenshot.png")
             print("saved error_screenshot.png")
             print(f"Page title: {driver.title!r} | URL: {driver.current_url}", flush=True)
+            print(f"Page length: {len(driver.page_source)}", flush=True)
+            print(driver.page_source[:300], flush=True)
         except Exception:
             pass
         return None
