@@ -68,10 +68,9 @@ def get_price(url):
         try:
             driver.save_screenshot("error_screenshot.png")
             print("saved error_screenshot.png")
-            src = driver.page_source
-            print("Has price selector:", "price-default--current" in src, flush=True)
-            print("Price-like classes:", sorted(set(re.findall(r'class="([^"]*price[^"]*)"', src)))[:15], flush=True)
-            print("ReadyState:", driver.execute_script("return document.readyState"), flush=True)
+            src = driver.page_source.lower()
+            print("Challenge markers:", [m for m in ("baxia", "punish", "captcha", "slide to verify", "unusual traffic") if m in src], flush=True)
+            print("Visible text:", driver.execute_script("return document.body.innerText")[:300].replace("\n", " "), flush=True)
         except Exception:
             pass
         return None
