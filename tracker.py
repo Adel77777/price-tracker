@@ -51,10 +51,6 @@ def get_price(url):
         driver.add_cookie({"name": "aep_usuc_f", "value": "site=glo&c_tp=USD&b_locale=en_US&region=DZ", "domain": ".aliexpress.com"})
         driver.add_cookie({"name": "aep_usuc_f", "value": "site=glo&c_tp=USD&b_locale=en_US&region=DZ", "domain": ".aliexpress.com", "path": "/"})
 
-        # Reload with cookies set
-        driver.get("https://www.aliexpress.com")
-        time.sleep(2)
-
         driver.get(url)
 
         price_tag = WebDriverWait(driver, 10).until(
@@ -64,11 +60,12 @@ def get_price(url):
         return float(price)
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error: {type(e).__name__}", flush=True)
         try:
             driver.save_screenshot("error_screenshot.png")
             print("saved error_screenshot.png")
-        except:
+            print(f"Page title: {driver.title!r} | URL: {driver.current_url}", flush=True)
+        except Exception:
             pass
         return None
     finally:
